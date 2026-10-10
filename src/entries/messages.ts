@@ -16,7 +16,17 @@ import type {
 } from "@ptd/social";
 import type { IMediaServerId, IMediaServerSearchOptions, IMediaServerSearchResult } from "@ptd/mediaServer";
 import type { IBackupData, IBackupFileInfo } from "@ptd/backupServer";
-import type { CTorrent, TorrentClientStatus, TorrentQueueDirection, TorrentSpeedLimit } from "@ptd/downloader";
+import type {
+  CTorrent,
+  CTorrentFile,
+  CTorrentFileSelection,
+  CTorrentPeer,
+  CTorrentTracker,
+  TorrentClientMetaData,
+  TorrentClientStatus,
+  TorrentQueueDirection,
+  TorrentSpeedLimit,
+} from "@ptd/downloader";
 
 // 可序列化的种子信息，用于辅种检测
 export interface ITorrentInfoForVerification {
@@ -78,8 +88,9 @@ interface ProtocolMap extends TMessageMap {
   removeCookie(data: chrome.cookies.CookieDetails | chrome.cookies.SetDetails): chrome.cookies.CookieDetails;
   checkAndExtendCookies(url: string): void;
 
-  // 1.6 chrome.notifications
-  showNotification(data: { options: chrome.notifications.NotificationOptions; timeout?: number }): void;
+  // （原 1.6 `showNotification` 已删除：声明之后从来没有 handler，且已无任何调用方 ——
+  //   真正要弹通知的地方直接调 chrome.notifications.create，见 background/utils/contextMenus.ts。
+  //   留着一个「声明了但没实现」的协议项，正是 §3.7(1) 那类静默 bug 的温床。）
 
   // 1.7 chrome.contextMenus
   addContextMenu(data: chrome.contextMenus.CreateProperties): string;
@@ -128,6 +139,21 @@ interface ProtocolMap extends TMessageMap {
   setClientTorrentSpeedLimit(data: { downloaderId: string; id: any; limits: TorrentSpeedLimit }): boolean;
   setClientTorrentLabel(data: { downloaderId: string; id: any; label: string }): boolean;
 
+  // 下载器能力元数据（feature 声明，UI 据此渲染文件/peers/tracker 面板）
+  getDownloaderMetaData(downloaderId: string): TorrentClientMetaData | undefined;
+
+  // 文件级 / peers / tracker 管理
+  getClientTorrentFiles(data: { downloaderId: string; torrent: CTorrent }): CTorrentFile[];
+  setClientTorrentFilePriority(data: {
+    downloaderId: string;
+    torrent: CTorrent;
+    selections: CTorrentFileSelection[];
+  }): boolean;
+  getClientTorrentPeers(data: { downloaderId: string; torrent: CTorrent }): CTorrentPeer[];
+  getClientTorrentTrackersDetail(data: { downloaderId: string; torrent: CTorrent }): CTorrentTracker[];
+  addClientTorrentTracker(data: { downloaderId: string; torrent: CTorrent; url: string }): boolean;
+  removeClientTorrentTracker(data: { downloaderId: string; torrent: CTorrent; url: string }): boolean;
+
   downloadTorrent(data: IDownloadTorrentOption): IDownloadTorrentResult;
 
   getDownloadHistory(): ITorrentDownloadMetadata[];
@@ -160,6 +186,7 @@ interface ProtocolMap extends TMessageMap {
   exportBackupData(data: { backupServerId: string | "local"; backupFields: TBackupFields[] }): boolean;
   getBackupHistory(data: string): IBackupFileInfo[];
   deleteBackupHistory(data: { backupServerId: string; path: string }): boolean;
+  applyBackupRetention(data: { backupServerId: string; keepFilename?: string }): IBackupFileInfo[];
   restoreBackupData(data: { restoreData: IBackupData; restoreOptions?: IRestoreOptions }): boolean;
   getRemoteBackupData(data: { backupServerId: string; path: string; decryptKey?: string }): IBackupData;
 

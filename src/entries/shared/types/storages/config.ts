@@ -28,6 +28,8 @@ export interface IConfigPiniaStorageSchema {
 
   saveTableBehavior: boolean;
   enableTableMultiSort: boolean; // 是否启用表格多列排序
+  tableActionColumnPosition: "start" | "end"; // 表格中 key 为 action 的操作列的位置（行首 / 行尾）
+  tableActionColumnFixed: boolean; // 表格横向滚动时是否固定 key 为 action 的操作列
 
   // 用于存储 v-data-table 表格的展示
   tableBehavior: Record<UiTableBehaviorKey, UiTableBehaviorItem>;
@@ -122,6 +124,8 @@ export interface IConfigPiniaStorageSchema {
     showField: Record<ITimelineUserInfoField["name"] | "ratio", boolean>; // 需要展示的数据，注意 ratio, siteCount, totalYear 不作为设置项
     showPerSiteField: Record<"siteName" | "name" | "level" | "uid", boolean>; // 需要展示的站点数据
     backgroundColor: string; // 背景颜色
+    userNameColor: string; // 用户名颜色
+    textColor: string; // 其他文本颜色
     dateFormat: "time_added" /*     yyyy-MM-dd */ | "time_alive" /* 过去时间 xxx ago */;
     faviconBlue: number;
     selectedSites: TSiteID[]; // 需要展示的站点
@@ -159,6 +163,8 @@ export interface IConfigPiniaStorageSchema {
     uploadAtFormatAsAlive: boolean;
     // 是否限制种子标题列的最大宽度，防止过长导致表格布局混乱
     limitTorrentTitleTdWidth: boolean;
+    // 按种子大小排序时，是否用色条标记出相同大小的种子（ #1411 ）
+    highlightSameSizeTorrent: boolean;
     // 种子标签数量超过多少个时使用分组显示（0表示不限制）
     maxTagCountBeforeGroup: number;
     // 默认隐藏的标签名称列表

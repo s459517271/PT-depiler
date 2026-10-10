@@ -17,9 +17,11 @@ import { formatSize, formatDate } from "@/options/utils.ts";
 import { useMetadataStore } from "@/options/stores/metadata.ts";
 import { useRuntimeStore } from "@/options/stores/runtime.ts";
 import { useConfigStore } from "@/options/stores/config.ts";
+import { useTableActionColumn } from "@/options/directives/useTableActionColumn.ts";
 
 import DeleteDialog from "./DeleteDialog.vue";
 import PushToDownloaderDialog from "./PushToDownloaderDialog.vue";
+import TorrentSiteTd from "./TorrentSiteTd.vue";
 import TorrentStateTd from "./TorrentStateTd.vue";
 import ClientStatusDialog from "./ClientStatusDialog.vue";
 import TorrentDetailDialog from "./TorrentDetailDialog.vue";
@@ -129,6 +131,15 @@ const fullTableHeader = computed(
     [
       { title: t("MyClient.table.client"), key: "clientId", align: "center", width: "120", props: { disabled: true } },
       { title: t("MyClient.table.name"), key: "name", align: "start", minWidth: "20rem", props: { disabled: true } },
+      {
+        // 站点判定在 loadSingleDownloader 中统一完成（urls / legacyUrls / trackerUrls 的 host 匹配），
+        // 判定未完成的行先显示加载态，故该列不参与排序
+        title: t("common.site"),
+        key: "site",
+        align: "center",
+        width: "110",
+        sortable: false,
+      },
       { title: t("MyClient.table.size"), key: "totalSize", align: "end", width: "110" },
       { title: t("MyClient.table.progress"), key: "progress", align: "end", width: "90" },
       { title: t("MyClient.table.status"), key: "state", align: "center", width: "110" },
@@ -150,11 +161,12 @@ const fullTableHeader = computed(
     ] as (DataTableHeader & { props?: any })[],
 );
 
-const tableHeader = computed(
-  () =>
+const tableHeader = computed(() =>
+  useTableActionColumn(
     fullTableHeader.value.filter(
       (item) => item?.props?.disabled || (configStore.tableBehavior["MyClient"] as any)?.columns?.includes(item.key),
     ) as DataTableHeader[],
+  ),
 );
 
 // ── data loading ──────────────────────────────────────────────────────────
@@ -455,7 +467,7 @@ function torrentKey(torrent: CTorrent) {
             <v-chip v-if="index === 0">
               <span>{{ item.title }}</span>
             </v-chip>
-            <span v-if="index === 1" class="grey--text caption">
+            <span v-if="index === 1" class="text-grey text-body-small">
               (+{{ (configStore.tableBehavior["MyClient"] as any).columns!.length - 1 }})
             </span>
           </template>
@@ -508,6 +520,11 @@ function torrentKey(torrent: CTorrent) {
               <v-icon size="x-small" icon="mdi-label-outline" /> {{ item.label }}
             </div>
           </div>
+        </template>
+
+        <!-- site column: 根据种子内的 tracker 地址识别所属站点，未匹配时按 public / unmatch 区分显示 -->
+        <template #item.site="{ item }">
+          <TorrentSiteTd :item="item" />
         </template>
 
         <!-- size column -->

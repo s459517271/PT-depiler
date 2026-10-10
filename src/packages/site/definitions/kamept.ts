@@ -1,3 +1,8 @@
+/**
+ * @JackettDefinitions https://github.com/Jackett/Jackett/blob/master/src/Jackett.Common/Definitions/kamept.yml
+ * @PTPPDefinitions https://github.com/pt-plugins/PT-Plugin-Plus/blob/dev/resource/sites/kamept.com/config.json
+ * @PDSDefinitions https://github.com/mantou568/pre-dessert-sites/blob/main/site_config/sites/kamept.json
+ */
 import type { ISiteMetadata } from "../types";
 import {
   CategoryInclbookmarked,
@@ -16,7 +21,7 @@ export const siteMetadata: ISiteMetadata = {
   aka: ["龟站"],
   schema: "NexusPHP",
   type: "private",
-  urls: ["https://kamept.com/"],
+  urls: ["uggcf://xnzrcg.pbz/"],
   description: "主打二次元同人AV的站点",
   tags: ["成人", "COS", "动漫", "音乐", "影视"],
   collaborator: ["NekoCH"],

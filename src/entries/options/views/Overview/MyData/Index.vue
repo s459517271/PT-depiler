@@ -11,6 +11,7 @@ import { useConfigStore } from "@/options/stores/config.ts";
 import { useRuntimeStore } from "@/options/stores/runtime.ts";
 import { useMetadataStore } from "@/options/stores/metadata.ts";
 import { useTableCustomFilter } from "@/options/directives/useAdvanceFilter.ts";
+import { useTableActionColumn } from "@/options/directives/useTableActionColumn.ts";
 import { formatDate, formatSize, formatTimeAgo } from "@/options/utils.ts";
 
 import SiteName from "@/options/components/SiteName.vue";
@@ -62,10 +63,12 @@ const fullTableHeader = reactive([
 ] as TExtendDataTableHeader[]);
 
 const tableHeader = computed(() => {
-  return fullTableHeader.filter(
-    (item: TExtendDataTableHeader) =>
-      item?.props?.disabled || configStore.tableBehavior.MyData.columns!.includes(item.key!),
-  ) as DataTableHeader[];
+  return useTableActionColumn(
+    fullTableHeader.filter(
+      (item: TExtendDataTableHeader) =>
+        item?.props?.disabled || configStore.tableBehavior.MyData.columns!.includes(item.key!),
+    ) as DataTableHeader[],
+  );
 });
 
 const tableNonBooleanControlKey = [
@@ -299,7 +302,7 @@ const showExportDialog = ref(false);
             <v-chip v-if="index === 0">
               <span>{{ item.title }}</span>
             </v-chip>
-            <span v-if="index === 1" class="text-grey caption">
+            <span v-if="index === 1" class="text-grey text-body-small">
               (+{{ configStore.tableBehavior.MyData.columns!.length - 1 }})
             </span>
           </template>
@@ -346,6 +349,7 @@ const showExportDialog = ref(false);
                         EResultParseStatus.parseError,
                         EResultParseStatus.unknownError,
                         EResultParseStatus.needLogin,
+                        EResultParseStatus.noUserInput,
                       ].map((item) => item.toString());
                       updateTableFilterValueFn();
                     }
